@@ -2932,7 +2932,15 @@ Returns a list of (host display-number screen protocol)."
 	 (slash-i (or (position #\/ name) -1))
 	 (colon-i (position #\: name :start (1+ slash-i)))
 	 (decnet-colon-p (eql (elt name (1+ colon-i)) #\:))
-	 (host (subseq name (1+ slash-i) colon-i))
+	 (host
+           (cond ((and (uiop:os-macosx-p)
+                       ;; DISPLAY variable may name a launchd socket (xquartz)
+                       (eql slash-i 0)
+                       ;; it /is/ a socket...
+                       (probe-file name))
+                  "")
+                 (t
+                  (subseq name (1+ slash-i) colon-i))))
 	 (dot-i (and colon-i (position #\. name :start colon-i)))
 	 (display (when colon-i
 		    (parse-integer name
